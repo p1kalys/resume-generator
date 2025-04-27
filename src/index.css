@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.animate-fade-in-out {
+  animation: fadeInOut 2s ease-in-out;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Resume specific styles */
+#resume-content {
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.5;
+  color: #333;
+}
+
+#resume-content h1 {
+  color: #000;
+  letter-spacing: 0.5px;
+}
+
+#resume-content h2 {
+  color: #000;
+  letter-spacing: 0.5px;
+}
+
+#resume-content ul li {
+  margin-bottom: 0.25rem;
+}
+
+/* For white spaces preservation in description fields */
+.whitespace-pre-line {
+  white-space: pre-line;
+}
+
+/* PDF print optimizations */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  @page {
+    size: A4;
+    margin: 0.4in 0.4in 0.3in 0.4in;
+  }
+  
+  #resume-content {
+    width: 100%;
+    height: 100%;
+    page-break-after: always;
+    padding: 0;
+  }
+
+  #resume-content a {
+    text-decoration: none;
+    color: #000;
+  }
+}
