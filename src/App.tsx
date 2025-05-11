@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { usePDF } from 'react-to-pdf';
+import { useState, useEffect } from 'react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { ResumeData } from './types/resume';
 import { getEmptyResumeData, loadFromLocalStorage } from './utils/helpers';
 import ResumeForm from './components/ResumeForm';
-import ResumePreview from './components/ResumePreview';
 import Button from './components/ui/Button';
 import { Tabs, TabPanel } from './components/ui/Tabs';
 import { Download, FileText, PenLine, FileCheck } from 'lucide-react';
+import ResumePDF from './components/ResumePreview';
+import { pdf } from '@react-pdf/renderer';
 
 function App() {
   const [resumeData, setResumeData] = useState<ResumeData>(getEmptyResumeData());
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  
-  const { toPDF, targetRef } = usePDF({
-    filename: `${resumeData.personalInfo.name || 'Resume'}.pdf`,
-    page: { format: 'A4' }
-  });
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
     const savedData = loadFromLocalStorage();
@@ -26,33 +21,28 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    // Generate PDF when resumeData changes
+    const generatePDF = async () => {
+      const blob = await pdf(<ResumePDF data={resumeData} />).toBlob();
+      setPdfBlob(blob);
+    };
+
+    generatePDF();
+  }, [resumeData]);
+
   const handleTabChange = (tab: 'edit' | 'preview') => {
     setActiveTab(tab);
   };
 
-  const handleGeneratePDF = async () => {
-    setIsGenerating(true);
-    try {
-      await toPDF();
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 3000);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   const tabs = [
-    { 
-      label: 'Edit Resume', 
+    {
+      label: 'Edit Resume',
       value: 'edit',
       icon: <PenLine size={18} />
     },
-    { 
-      label: 'Preview', 
+    {
+      label: 'Preview',
       value: 'preview',
       icon: <FileText size={18} />
     },
@@ -71,56 +61,66 @@ function App() {
 
       <main className="max-w-7xl mx-auto p-4 md:p-6">
         <div className="mb-6">
-          <Tabs 
-            tabs={tabs} 
-            value={activeTab} 
+          <Tabs
+            tabs={tabs}
+            value={activeTab}
             onChange={(value) => handleTabChange(value as 'edit' | 'preview')}
             className="bg-white rounded-t-lg shadow-sm px-2 sm:px-4 overflow-x-auto"
           />
-          
+
           <div className="bg-white p-4 sm:p-6 rounded-b-lg shadow-sm">
             <TabPanel value={activeTab} tabValue="edit">
               <p className="text-gray-600 mb-6">
-                Fill out the sections below to create your resume. Your changes are automatically saved. 
+                Fill out the sections below to create your resume. Your changes are automatically saved.
                 Switch to Preview mode to see how your resume will look.
               </p>
-              <ResumeForm 
-                data={resumeData} 
-                onUpdateData={setResumeData} 
+              <ResumeForm
+                data={resumeData}
+                onUpdateData={setResumeData}
               />
             </TabPanel>
-            
+
             <TabPanel value={activeTab} tabValue="preview">
+              {/* Download PDF Button at the top of the Preview Tab */}
+              <div className="mb-4 flex justify-end">
+                {pdfBlob && (
+                  <PDFDownloadLink
+                    document={<ResumePDF data={resumeData} />}
+                    fileName={`${resumeData.personalInfo.name || 'Resume'}.pdf`}
+                    className="w-full sm:w-auto"
+                  >
+                    {({ loading }) => (
+                      <Button disabled={loading} isLoading={loading}>
+                        <Download size={16} className="mr-2" />
+                        {loading ? 'Generating PDF...' : 'Download PDF'}
+                      </Button>
+                    )}
+                  </PDFDownloadLink>
+                )}
+              </div>
+
+              {/* PDF Preview */}
               <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <p className="text-gray-600">
                   This is how your resume will look when exported to PDF.
                 </p>
-                <Button
-                  onClick={handleGeneratePDF}
-                  disabled={isGenerating}
-                  isLoading={isGenerating}
-                  className="w-full sm:w-auto"
-                >
-                  <Download size={18} className="mr-2" />
-                  Generate PDF
-                </Button>
               </div>
+
+              {/* Render the PDF preview */}
               <div className="bg-gray-100 p-2 sm:p-4 rounded-lg overflow-auto max-h-[800px]">
-                <div ref={targetRef}>
-                  <ResumePreview data={resumeData} />
-                </div>
+                {/* Only render the PDF if it's available */}
+                {pdfBlob ? (
+                  <object data={URL.createObjectURL(pdfBlob)} type="application/pdf" width="100%" height="600px">
+                    <p>Your browser does not support PDFs. <a href={URL.createObjectURL(pdfBlob)}>Download the PDF</a></p>
+                  </object>
+                ) : (
+                  <p>Loading PDF preview...</p>
+                )}
               </div>
             </TabPanel>
           </div>
         </div>
       </main>
-
-      {showSuccess && (
-        <div className="fixed bottom-6 right-6 bg-green-100 text-green-800 px-4 py-2 rounded-md shadow-md flex items-center gap-2 animate-fade-in-out z-50">
-          <FileCheck size={18} />
-          <span>PDF generated successfully!</span>
-        </div>
-      )}
 
       <footer className="bg-white py-4 border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center text-sm text-gray-500">
