@@ -2,7 +2,6 @@ import React from 'react';
 import { Experience } from '../../types/resume';
 import { generateId } from '../../utils/helpers';
 import Input from '../ui/Input';
-import TextArea from '../ui/TextArea';
 import Button from '../ui/Button';
 import { Trash, Plus } from 'lucide-react';
 
@@ -163,12 +162,12 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, updateData }) => 
 
             {exp.points && exp.points.length === 0 && (
               <div className="flex gap-2">
-                <TextArea
+                <Input
                   value=""
                   onChange={(e) => handlePointChange(index, 0, e.target.value)}
                   placeholder="e.g., Developed scalable API services..."
-                  rows={2}
                   className="w-full"
+                  maxLength={250}
                 />
                 <button
                   type="button"
@@ -182,12 +181,12 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, updateData }) => 
 
             {exp.points && exp.points.map((point, pointIndex) => (
               <div key={pointIndex} className="flex gap-2">
-                <TextArea
+                <Input
                   value={point}
                   onChange={(e) => handlePointChange(index, pointIndex, e.target.value)}
                   placeholder="e.g., Developed scalable API services..."
-                  rows={2}
                   className="w-full"
+                  maxLength={250}
                 />
                 <button
                   type="button"

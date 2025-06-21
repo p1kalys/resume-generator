@@ -79,14 +79,17 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, updateData }) => {
           key={project.id}
           className="p-4 border border-gray-200 rounded-lg space-y-4 relative bg-white shadow-sm"
         >
+          <div className="flex items-center justify-between text-lg font-semibold text-gray-800">
+            Project {projectIndex + 1}
           <button
             type="button"
             onClick={() => removeProject(projectIndex)}
-            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+            className="text-gray-400 hover:text-red-500 transition-colors"
             aria-label="Remove project"
           >
             <Trash size={18} />
           </button>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -113,15 +116,15 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, updateData }) => {
 
           {/* Points Section */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">Project Points</h3>
+            <h3 className="text-md font-semibold text-gray-800">Project Points</h3>
+            <div className='py-2'>
             {project.points.map((point, pointIndex) => (
               <div key={pointIndex} className="flex items-center space-x-2">
-                <TextArea
+                <Input
                   name="points"
                   value={point}
                   onChange={(e) => handlePointsChange(projectIndex, pointIndex, e.target.value)}
                   placeholder="Project Point"
-                  rows={2}
                 />
                 <button
                   type="button"
@@ -133,6 +136,7 @@ const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, updateData }) => {
                 </button>
               </div>
             ))}
+            </div>
             <Button
               variant="secondary"
               size="sm"
